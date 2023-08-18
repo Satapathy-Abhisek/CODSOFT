@@ -1,4 +1,7 @@
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 class BankAccount {
     private double balance;
@@ -25,63 +28,79 @@ class BankAccount {
     }
 }
 
-class ATM {
+class ATMGUI extends JFrame implements ActionListener {
     private BankAccount account;
+    private JTextField amountField;
+    private JRadioButton withdrawRadioButton, depositRadioButton, checkBalanceRadioButton;
+    private JButton executeButton;
+    private JLabel messageLabel;
 
-    public ATM(BankAccount account) {
+    public ATMGUI(BankAccount account) {
         this.account = account;
+
+        setTitle("ATM Interface");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null); // Center the window
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(7, 1));
+
+        JLabel welcomeLabel = new JLabel("Welcome to the ATM");
+        welcomeLabel.setHorizontalAlignment(JLabel.CENTER);
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        mainPanel.add(welcomeLabel);
+
+        JPanel radioButtonsPanel = new JPanel();
+        radioButtonsPanel.setLayout(new FlowLayout());
+        withdrawRadioButton = new JRadioButton("Withdraw");
+        depositRadioButton = new JRadioButton("Deposit");
+        checkBalanceRadioButton = new JRadioButton("Check Balance");
+        radioButtonsPanel.add(withdrawRadioButton);
+        radioButtonsPanel.add(depositRadioButton);
+        radioButtonsPanel.add(checkBalanceRadioButton);
+        mainPanel.add(radioButtonsPanel);
+
+        amountField = new JTextField(10);
+        executeButton = new JButton("Execute");
+        executeButton.addActionListener(this);
+        mainPanel.add(amountField);
+        mainPanel.add(executeButton);
+
+        messageLabel = new JLabel("", JLabel.CENTER);
+        mainPanel.add(messageLabel);
+
+        ButtonGroup operationGroup = new ButtonGroup();
+        operationGroup.add(withdrawRadioButton);
+        operationGroup.add(depositRadioButton);
+        operationGroup.add(checkBalanceRadioButton);
+
+        add(mainPanel);
+        setVisible(true);
     }
 
-    public void menu() {
-        System.out.println("Welcome to the ATM!");
-        System.out.println("1. Check Balance");
-        System.out.println("2. Deposit");
-        System.out.println("3. Withdraw");
-        System.out.println("4. Exit");
-    }
-
-    public void run() {
-        Scanner sc = new Scanner(System.in);
-
-        while (true) {
-            menu();
-            System.out.print("Enter your choice: ");
-            int choice = sc.nextInt();
-
-            switch (choice) {
-                case 1:
-                    System.out.println("Your balance: Rs." + account.getBalance());
-                    break;
-                case 2:
-                    System.out.print("Enter the deposit amount: Rs.");
-                    double depositAmount = sc.nextDouble();
-                    account.deposit(depositAmount);
-                    System.out.println("Transaction successful. Your update balance: Rs." + account.getBalance());
-                    break;
-                case 3:
-                    System.out.print("Enter withdrawal amount: Rs.");
-                    double withdrawalAmount = sc.nextDouble();
-                    if (account.withdraw(withdrawalAmount)) {
-                        System.out.println("Transaction successful. Your update balance: Rs." + account.getBalance());
-                    } else {
-                        System.out.println("Insufficient balance!!");
-                    }
-                    break;
-                case 4:
-                    System.out.println("Thank you.Have a good day.");
-                    return;
-                default:
-                    System.out.println("Invalid choice. Enter a valid option.");
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (withdrawRadioButton.isSelected()) {
+            double withdrawAmount = Double.parseDouble(amountField.getText());
+            if (account.withdraw(withdrawAmount)) {
+                messageLabel.setText("Withdrawal successful. Balance: Rs." + account.getBalance());
+            } else {
+                messageLabel.setText("Insufficient balance for withdrawal.");
             }
+        } else if (depositRadioButton.isSelected()) {
+            double depositAmount = Double.parseDouble(amountField.getText());
+            account.deposit(depositAmount);
+            messageLabel.setText("Deposit successful. Balance: Rs." + account.getBalance());
+        } else if (checkBalanceRadioButton.isSelected()) {
+            messageLabel.setText("Current balance: Rs." + account.getBalance());
         }
     }
 }
 
 public class AtmInterface {
-    public static void main(String args[]) {
-        BankAccount user = new BankAccount(2000.0);
-        ATM atm = new ATM(user);
-        atm.run();
-
+    public static void main(String[] args) {
+        BankAccount userAccount = new BankAccount(2000.0);
+        SwingUtilities.invokeLater(() -> new ATMGUI(userAccount));
     }
 }
